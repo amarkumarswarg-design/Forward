@@ -20,7 +20,7 @@ def run_server():
 # Ye saari values hum Render ke dashboard par bharenge
 API_ID = int(os.environ.get('API_ID', 0))
 API_HASH = os.environ.get('API_HASH', '')
-STRING_SESSION = os.environ.get('STRING_SESSION', '')
+STRING_SESSION = os.environ.get('STRING_SESSION', '').strip().replace(" ", "")
 SOURCE_ID = int(os.environ.get('SOURCE_ID', 0))
 DEST_ID = int(os.environ.get('DEST_ID', 0))
 
