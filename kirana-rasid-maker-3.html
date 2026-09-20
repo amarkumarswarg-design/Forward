@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>रसीद बनाएं</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yantramanav:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --bg: #FFF8ED;
+    --paper: #FFFFFF;
+    --paper-alt: #FFE9C2;
+    --ink: #3A2410;
+    --muted: #8a7355;
+    --border: #F3D9A0;
+    --primary: #F0800C;
+    --primary-dark: #C25E00;
+    --primary-light: #FFC145;
+    --accent2: #0E7C7B;
+    --accent2-dark: #0A5E5D;
+    --accent2-bg: #DDF3F1;
+    --success: #16A34A;
+    --success-bg: #E1F7E9;
+    --success-border: #A9E4BE;
+    --danger: #E63946;
+    --danger-bg: #FDE6E7;
+    --danger-border: #F5B8BC;
+    --shadow: rgba(214, 110, 10, 0.22);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #201408;
+      --paper: #2c1c0e;
+      --paper-alt: #3d2810;
+      --ink: #fbe9d0;
+      --muted: #c9a97c;
+      --border: #55391a;
+      --primary: #ff9d2e;
+      --primary-dark: #ffb95c;
+      --primary-light: #c9761a;
+      --accent2: #3fd1cf;
+      --accent2-dark: #7ee6e4;
+      --accent2-bg: #123433;
+      --success: #4ade80;
+      --success-bg: #123321;
+      --success-border: #235c3a;
+      --danger: #f28b8f;
+      --danger-bg: #3a1519;
+      --danger-border: #5c2429;
+      --shadow: rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #201408;
+    --paper: #2c1c0e;
+    --paper-alt: #3d2810;
+    --ink: #fbe9d0;
+    --muted: #c9a97c;
+    --border: #55391a;
+    --primary: #ff9d2e;
+    --primary-dark: #ffb95c;
+    --primary-light: #c9761a;
+    --accent2: #3fd1cf;
+    --accent2-dark: #7ee6e4;
+    --accent2-bg: #123433;
+    --success: #4ade80;
+    --success-bg: #123321;
+    --success-border: #235c3a;
+    --danger: #f28b8f;
+    --danger-bg: #3a1519;
+    --danger-border: #5c2429;
+    --shadow: rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Yantramanav', 'Noto Sans', sans-serif;
+  }
+  body {
+    padding: 0 16px 40px;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(240,128,12,0.13) 1px, transparent 1.2px);
+    background-size: 22px 22px;
+  }
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---------- Floating decorative dots ---------- */
+  .floating-dots {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .floating-dots span {
+    position: absolute;
+    bottom: -40px;
+    border-radius: 50%;
+    opacity: 0;
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(0) translateX(0); opacity: 0; }
+    8%   { opacity: .5; }
+    92%  { opacity: .5; }
+    100% { transform: translateY(-112vh) translateX(var(--drift, 24px)); opacity: 0; }
+  }
+  .floating-dots span:nth-child(1){ left:4%;  width:8px;  height:8px;  background:var(--primary);  animation-duration:19s; animation-delay:0s;  --drift:18px; }
+  .floating-dots span:nth-child(2){ left:14%; width:5px;  height:5px;  background:var(--accent2);  animation-duration:24s; animation-delay:2s;  --drift:-14px; }
+  .floating-dots span:nth-child(3){ left:24%; width:10px; height:10px; background:var(--danger);   animation-duration:21s; animation-delay:5s;  --drift:22px; }
+  .floating-dots span:nth-child(4){ left:33%; width:6px;  height:6px;  background:var(--primary-light); animation-duration:17s; animation-delay:1s; --drift:-20px; }
+  .floating-dots span:nth-child(5){ left:44%; width:7px;  height:7px;  background:var(--accent2);  animation-duration:26s; animation-delay:8s;  --drift:16px; }
+  .floating-dots span:nth-child(6){ left:54%; width:9px;  height:9px;  background:var(--primary);  animation-duration:20s; animation-delay:3s;  --drift:-18px; }
+  .floating-dots span:nth-child(7){ left:64%; width:5px;  height:5px;  background:var(--danger);   animation-duration:23s; animation-delay:6s;  --drift:20px; }
+  .floating-dots span:nth-child(8){ left:73%; width:8px;  height:8px;  background:var(--primary-light); animation-duration:18s; animation-delay:4s; --drift:-16px; }
+  .floating-dots span:nth-child(9){ left:83%; width:6px;  height:6px;  background:var(--accent2);  animation-duration:25s; animation-delay:7s;  --drift:14px; }
+  .floating-dots span:nth-child(10){left:91%; width:9px;  height:9px;  background:var(--primary);  animation-duration:22s; animation-delay:9s;  --drift:-22px; }
+  .floating-dots span:nth-child(11){left:8%;  width:5px;  height:5px;  background:var(--danger);   animation-duration:27s; animation-delay:11s; --drift:18px; }
+  .floating-dots span:nth-child(12){left:60%; width:6px;  height:6px;  background:var(--primary-light); animation-duration:20s; animation-delay:13s; --drift:-14px; }
+  @media (prefers-reduced-motion: reduce){
+    .floating-dots { display: none; }
+  }
+
+  /* ---------- Masthead ---------- */
+  .topbar {
+    height: 7px;
+    background: linear-gradient(90deg, var(--accent2), var(--primary), var(--danger), var(--primary), var(--accent2));
+    margin: 0 -16px 0;
+  }
+  .masthead {
+    text-align: center;
+    padding: 30px 0 24px;
+    position: relative;
+  }
+  .masthead .badge {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--danger));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 12px;
+    box-shadow: 0 8px 18px var(--shadow);
+  }
+  .masthead h1 {
+    font-size: 30px;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: 0.5px;
+    color: var(--primary-dark);
+  }
+  .masthead .tagline {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 3px;
+    font-weight: 500;
+  }
+  .masthead .date {
+    display: inline-block;
+    font-size: 12.5px;
+    color: var(--primary-dark);
+    background: var(--paper-alt);
+    border: 1px solid var(--border);
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-top: 12px;
+    font-weight: 700;
+  }
+
+  /* ---------- Panels ---------- */
+  .panel {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 3px 12px var(--shadow);
+  }
+  .panel.panel-budget { border-left-color: var(--accent2); }
+  .panel.panel-history { border-left-color: var(--danger); }
+  .panel h2 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .panel h2 .icon-chip {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    box-shadow: 0 3px 8px var(--shadow);
+  }
+  .panel-budget h2 { color: var(--accent2-dark); }
+  .panel-budget h2 .icon-chip { background: linear-gradient(135deg, var(--accent2), #3fbdba); }
+  .panel-history h2 { color: var(--danger); }
+  .panel-history h2 .icon-chip { background: linear-gradient(135deg, var(--danger), #ff7a7a); }
+
+  .budget-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .budget-row label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  .budget-row .hint {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 5px;
+    font-style: italic;
+  }
+
+  input, select {
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    padding: 9px 11px;
+    outline: none;
+    transition: border-color .15s ease;
+    width: 100%;
+  }
+  input:focus, select:focus {
+    border-color: var(--primary);
+  }
+  ::placeholder { color: var(--muted); opacity: .8; }
+
+  .rupee-input { position: relative; flex: 1; }
+  .rupee-input span {
+    position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-weight: 600; font-size: 14px;
+  }
+  .rupee-input input { padding-left: 26px; }
+
+  .item-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .item-form .row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  .field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: none;
+  }
+  .add-btn {
+    margin-top: 4px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .add-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--shadow); }
+  .add-btn:active { transform: translateY(0); }
+
+  .edit-banner {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--paper-alt);
+    border: 1.5px dashed var(--primary-light);
+    border-radius: 9px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-dark);
+  }
+  .edit-banner button {
+    background: none; border: none; cursor: pointer;
+    color: var(--danger); font-size: 12.5px; font-weight: 700;
+    font-family: inherit;
+  }
+
+  /* ---------- Receipt ---------- */
+  .receipt-shell {
+    background: var(--paper);
+    border-radius: 14px;
+    box-shadow: 0 4px 16px var(--shadow);
+    overflow: hidden;
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
+  }
+  .receipt-header {
+    background: linear-gradient(135deg, var(--primary), #d9a441);
+    color: #fff;
+    text-align: center;
+    padding: 20px 20px 26px;
+    position: relative;
+  }
+  .receipt-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: .5px;
+  }
+  .receipt-header .sub {
+    font-size: 12px;
+    letter-spacing: 2px;
+    opacity: .9;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .receipt-header .rdate {
+    font-size: 12.5px;
+    margin-top: 10px;
+    opacity: .95;
+    font-weight: 500;
+  }
+  /* torn / perforated edge like a thermal receipt */
+  .tear {
+    height: 14px;
+    background:
+      radial-gradient(circle at 10px 0, transparent 9px, var(--primary) 9.5px) top/20px 14px repeat-x;
+    margin-top: -1px;
+  }
+  .tear-bottom {
+    height: 14px;
+    background:
+      radial-gradient(circle at 10px 14px, transparent 9px, var(--paper) 9.5px) bottom/20px 14px repeat-x;
+  }
+
+  .receipt-body { padding: 4px 20px 20px; }
+
+  table.items { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  table.items thead th {
+    text-align: left;
+    font-size: 12.5px;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 8px 6px;
+    border-bottom: 2px solid var(--border);
+  }
+  table.items thead th.num, table.items tbody td.num { text-align: center; width: 28px; }
+  table.items thead th.price, table.items tbody td.price { text-align: right; }
+  table.items tbody td {
+    padding: 10px 6px;
+    font-size: 14.5px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.items tbody tr:last-child td { border-bottom: none; }
+  .item-name { font-weight: 700; }
+  .qty-badge {
+    background: var(--paper-alt);
+    color: var(--primary-dark);
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    display: inline-block;
+  }
+  .rate-note {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+    font-style: italic;
+  }
+  .price-tag { font-weight: 700; color: var(--primary-dark); }
+  .row-actions { display: flex; gap: 2px; white-space: nowrap; }
+  .edit-btn, .remove-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 14px; padding: 4px 6px;
+    line-height: 1; border-radius: 6px;
+  }
+  .edit-btn { color: var(--primary-dark); }
+  .edit-btn:hover { background: var(--paper-alt); }
+  .remove-btn { color: var(--danger); }
+  .remove-btn:hover { background: var(--danger-bg); }
+
+  .empty-state {
+    text-align: center;
+    padding: 26px 10px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 14px;
+    padding: 14px 6px 8px;
+    border-top: 2px dashed var(--border);
+    margin-top: 6px;
+  }
+  .total-row .label { font-size: 15px; font-weight: 700; }
+  .total-row .value { font-size: 20px; font-weight: 900; color: var(--primary-dark); }
+
+  .summary {
+    background: var(--paper-alt);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 2px 18px;
+    margin-top: 10px;
+  }
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .s-value { font-weight: 700; }
+  .remain-row {
+    background: var(--success-bg);
+    margin: 4px -18px -2px;
+    padding: 13px 18px;
+    border-radius: 0 0 10px 10px;
+    border-top: 1px solid var(--success-border);
+  }
+  .remain-row .s-label { font-weight: 700; color: var(--success); }
+  .remain-row .s-value { color: var(--success); font-size: 18px; }
+  .over-row .s-label { color: var(--danger); }
+  .over-row .s-value { color: var(--danger); }
+  .over-row { background: var(--danger-bg); border-top: 1px solid var(--danger-border); }
+
+  .receipt-footer {
+    text-align: center;
+    padding: 4px 0 18px;
+    color: var(--primary);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .receipt-footer .sub2 {
+    display: block; font-size: 10.5px; color: var(--muted);
+    font-weight: 400; margin-top: 3px;
+  }
+
+  .actions {
+    display: flex; gap: 10px; padding: 0 20px 20px;
+  }
+  .download-btn {
+    flex: 1;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .download-btn:hover { opacity: .9; }
+  .download-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* ---------- History ---------- */
+  .history-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 4px; border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-main { display: flex; flex-direction: column; gap: 2px; }
+  .history-date { font-weight: 700; }
+  .history-meta { font-size: 12px; color: var(--muted); }
+  .history-btns { display: flex; gap: 6px; }
+  .history-btns button {
+    font-family: inherit; font-size: 12.5px; font-weight: 600;
+    border-radius: 8px; padding: 6px 10px; cursor: pointer; border: 1.5px solid var(--border);
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .history-btns button.open-btn { border-color: var(--primary); color: var(--primary-dark); }
+  .history-btns button.del-btn { border-color: var(--danger-border); color: var(--danger); }
+
+  .app-footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 6px 0 20px;
+  }
+  .app-footer strong { color: var(--primary-dark); }
+
+  .watermark {
+    text-align: right;
+    font-size: 10px;
+    color: var(--muted);
+    opacity: .6;
+    font-style: italic;
+    margin-top: 10px;
+    padding-right: 2px;
+  }
+
+  @media (max-width: 420px){
+    .item-form .row2 { grid-template-columns: 1fr 1fr; }
+    .item-form .row2 .field:nth-child(3) { grid-column: span 2; }
+  }
+
+  /* ---------- Print (PDF) ---------- */
+  @page {
+    margin: 10mm;
+  }
+  body.measuring .no-print { display: none !important; }
+  body.measuring .receipt-shell { box-shadow: none; border: none; margin: 0; border-radius: 0; }
+  @media print {
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    html, body { padding: 0; margin: 0; background: #fff; height: auto; }
+    .no-print { display: none !important; }
+    .receipt-shell { box-shadow: none; border: none; margin: 0; border-radius: 0; }
+    .wrap { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="floating-dots no-print" aria-hidden="true">
+  <span></span><span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+<div class="topbar"></div>
+<div class="wrap">
+
+  <div class="masthead no-print">
+    <div class="badge">🧺</div>
+    <h1>रसीद बनाएं</h1>
+    <div class="tagline">अपनी खरीदारी का हिसाब आसानी से रखें</div>
+    <div class="date" id="todayDate"></div>
+  </div>
+
+  <div class="panel panel-budget no-print">
+    <h2><span class="icon-chip">💰</span> बजट (वैकल्पिक)</h2>
+    <div class="budget-row">
+      <div class="rupee-input">
+        <span>₹</span>
+        <input id="budgetInput" type="number" min="0" placeholder="जैसे 1000" inputmode="decimal">
+      </div>
+    </div>
+    <div class="hint">खाली छोड़ें तो PDF में शेष राशि नहीं दिखेगी</div>
+  </div>
+
+  <div class="panel no-print">
+    <h2><span class="icon-chip">🛒</span> सामान जोड़ें</h2>
+    <div class="edit-banner" id="editBanner">
+      <span>✎ आइटम में बदलाव कर रहे हैं</span>
+      <button id="cancelEditBtn">रद्द करें ✕</button>
+    </div>
+    <div class="item-form">
+      <div class="field">
+        <label>वस्तु का नाम</label>
+        <input id="nameInput" type="text" placeholder="जैसे आलू / Sugar / दवाई">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>मात्रा</label>
+          <input id="qtyInput" type="number" min="0" step="any" placeholder="जैसे 5">
+        </div>
+        <div class="field">
+          <label>इकाई</label>
+          <select id="unitInput">
+            <option value="kg">kg</option>
+            <option value="gm">gram</option>
+            <option value="piece">piece</option>
+            <option value="litre">litre</option>
+            <option value="ml">ml</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>मूल्य</label>
+          <div class="rupee-input">
+            <span>₹</span>
+            <input id="priceInput" type="number" min="0" step="any" placeholder="जैसे 100">
+          </div>
+        </div>
+      </div>
+      <button class="add-btn" id="addBtn">+ जोड़ें</button>
+    </div>
+  </div>
+
+  <div class="receipt-shell" id="receiptShell">
+    <div class="receipt-header">
+      <h2>खरीदारी की रसीद</h2>
+      <div class="sub">SHOPPING RECEIPT</div>
+      <div class="rdate" id="receiptDate"></div>
+    </div>
+    <div class="tear"></div>
+    <div class="receipt-body">
+      <table class="items" id="itemsTable">
+        <thead>
+          <tr>
+            <th class="num">क्र.</th>
+            <th>वस्तु का नाम</th>
+            <th>मात्रा</th>
+            <th class="price">मूल्य</th>
+            <th class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState">अभी तक कोई सामान नहीं जोड़ा गया</div>
+
+      <div class="total-row" id="totalRow" style="display:none">
+        <span class="label">कुल योग (Total)</span>
+        <span class="value" id="totalValue">₹ 0</span>
+      </div>
+
+      <div class="summary" id="summaryBox" style="display:none">
+        <div class="summary-row">
+          <span class="s-label">कुल बजट (Budget)</span>
+          <span class="s-value" id="budgetValue">₹ 0</span>
+        </div>
+        <div class="summary-row">
+          <span class="s-label">कुल खर्च (Total Spent)</span>
+          <span class="s-value" id="spentValue">− ₹ 0</span>
+        </div>
+        <div class="summary-row remain-row" id="remainRow">
+          <span class="s-label" id="remainLabel">शेष राशि (Remaining)</span>
+          <span class="s-value" id="remainValue">₹ 0</span>
+        </div>
+      </div>
+
+      <div class="receipt-footer" id="footerNote" style="display:none">
+        धन्यवाद !
+        <span class="sub2">यह रसीद स्वतः तैयार की गई है</span>
+      </div>
+      <div class="watermark">— Amar</div>
+    </div>
+    <div class="actions no-print">
+      <button class="download-btn" id="downloadBtn" disabled>⬇ PDF डाउनलोड करें</button>
+    </div>
+  </div>
+
+  <div class="panel panel-history no-print" id="historyPanel" style="display:none">
+    <h2><span class="icon-chip">📜</span> पुरानी रसीदें</h2>
+    <div id="historyList"></div>
+  </div>
+
+  <div class="app-footer no-print">
+    🧾 Kirana Bill Maker · Made by <strong>Amar</strong>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var HINDI_MONTHS = ["जनवरी","फ़रवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
+
+  function formatDate(d){
+    return d.getDate() + " " + HINDI_MONTHS[d.getMonth()] + " " + d.getFullYear();
+  }
+  function shortDate(d){
+    var dd = String(d.getDate()).padStart(2,'0');
+    var mm = String(d.getMonth()+1).padStart(2,'0');
+    return dd + "-" + mm + "-" + d.getFullYear();
+  }
+
+  var todayStr = formatDate(new Date());
+  document.getElementById('todayDate').textContent = todayStr;
+  document.getElementById('receiptDate').textContent = "दिनांक: " + todayStr;
+
+  var items = [];
+  var editIndex = null;
+
+  var nameInput = document.getElementById('nameInput');
+  var qtyInput = document.getElementById('qtyInput');
+  var unitInput = document.getElementById('unitInput');
+  var priceInput = document.getElementById('priceInput');
+  var addBtn = document.getElementById('addBtn');
+  var budgetInput = document.getElementById('budgetInput');
+  var downloadBtn = document.getElementById('downloadBtn');
+  var editBanner = document.getElementById('editBanner');
+  var cancelEditBtn = document.getElementById('cancelEditBtn');
+
+  function unitLabel(qty, unit){
+    if (unit === 'piece') return qty + " piece";
+    return qty + " " + unit;
+  }
+
+  function perUnitNote(qty, unit, price){
+    qty = parseFloat(qty);
+    price = parseFloat(price);
+    if (!qty || qty <= 0) return null;
+    if (unit === 'piece') return null;
+    var rate, label;
+    if (unit === 'kg'){ rate = price / qty; label = "kg"; }
+    else if (unit === 'gm'){ rate = price / (qty/1000); label = "kg"; }
+    else if (unit === 'litre'){ rate = price / qty; label = "litre"; }
+    else if (unit === 'ml'){ rate = price / (qty/1000); label = "litre"; }
+    else return null;
+    if (!isFinite(rate)) return null;
+    var r = rate % 1 === 0 ? rate.toFixed(0) : rate.toFixed(2);
+    return "लगभग ₹" + r + "/" + label;
+  }
+
+  function render(){
+    var body = document.getElementById('itemsBody');
+    var empty = document.getElementById('emptyState');
+    var totalRow = document.getElementById('totalRow');
+    var summaryBox = document.getElementById('summaryBox');
+    var footerNote = document.getElementById('footerNote');
+
+    body.innerHTML = '';
+    if (items.length === 0){
+      empty.style.display = 'block';
+      totalRow.style.display = 'none';
+      summaryBox.style.display = 'none';
+      footerNote.style.display = 'none';
+      downloadBtn.disabled = true;
+      return;
+    }
+    empty.style.display = 'none';
+    totalRow.style.display = 'flex';
+    footerNote.style.display = 'block';
+    downloadBtn.disabled = false;
+
+    var total = 0;
+    items.forEach(function(it, i){
+      total += it.price;
+      var note = perUnitNote(it.qty, it.unit, it.price);
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="num">' + (i+1) + '</td>' +
+        '<td class="item-name">' + escapeHtml(it.name) + '</td>' +
+        '<td><span class="qty-badge">' + escapeHtml(unitLabel(it.qty, it.unit)) + '</span>' +
+          (note ? '<span class="rate-note">' + note + '</span>' : '') +
+        '</td>' +
+        '<td class="price price-tag">₹ ' + fmt(it.price) + '</td>' +
+        '<td class="no-print"><div class="row-actions">' +
+          '<button class="edit-btn" data-i="' + i + '" title="बदलें">✎</button>' +
+          '<button class="remove-btn" data-i="' + i + '" title="हटाएं">✕</button>' +
+        '</div></td>';
+      body.appendChild(tr);
+    });
+
+    document.getElementById('totalValue').textContent = '₹ ' + fmt(total);
+
+    var budget = parseFloat(budgetInput.value);
+    if (budget && budget > 0){
+      summaryBox.style.display = 'block';
+      document.getElementById('budgetValue').textContent = '₹ ' + fmt(budget);
+      document.getElementById('spentValue').textContent = '− ₹ ' + fmt(total);
+      var remain = budget - total;
+      var remainRow = document.getElementById('remainRow');
+      var remainLabel = document.getElementById('remainLabel');
+      var remainValue = document.getElementById('remainValue');
+      if (remain < 0){
+        remainRow.className = 'summary-row remain-row over-row';
+        remainLabel.textContent = 'बजट से अधिक (Over Budget)';
+        remainValue.textContent = '₹ ' + fmt(Math.abs(remain));
+      } else {
+        remainRow.className = 'summary-row remain-row';
+        remainLabel.textContent = 'शेष राशि (Remaining)';
+        remainValue.textContent = '₹ ' + fmt(remain);
+      }
+    } else {
+      summaryBox.style.display = 'none';
+    }
+
+    Array.prototype.forEach.call(body.querySelectorAll('.remove-btn'), function(btn){
+      btn.addEventListener('click', function(){
+        var i = parseInt(btn.getAttribute('data-i'), 10);
+        items.splice(i, 1);
+        if (editIndex === i) exitEditMode();
+        else if (editIndex !== null && i < editIndex) editIndex--;
+        render();
+      });
+    });
+    Array.prototype.forEach.call(body.querySelectorAll('.edit-btn'), function(btn){
+      btn.addEventListener('click', function(){
+        enterEditMode(parseInt(btn.getAttribute('data-i'), 10));
+      });
+    });
+  }
+
+  function enterEditMode(i){
+    var it = items[i];
+    editIndex = i;
+    nameInput.value = it.name;
+    qtyInput.value = it.qty;
+    unitInput.value = it.unit;
+    priceInput.value = it.price;
+    addBtn.textContent = '✓ बदलाव सेव करें';
+    editBanner.style.display = 'flex';
+    nameInput.focus();
+  }
+
+  function exitEditMode(){
+    editIndex = null;
+    nameInput.value = ''; qtyInput.value = ''; unitInput.value = 'kg'; priceInput.value = '';
+    addBtn.textContent = '+ जोड़ें';
+    editBanner.style.display = 'none';
+  }
+
+  cancelEditBtn.addEventListener('click', exitEditMode);
+
+  function fmt(n){
+    n = Math.round(n * 100) / 100;
+    return n.toLocaleString('en-IN');
+  }
+  function escapeHtml(s){
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  addBtn.addEventListener('click', function(){
+    var name = nameInput.value.trim();
+    var qty = parseFloat(qtyInput.value);
+    var unit = unitInput.value;
+    var price = parseFloat(priceInput.value);
+    if (!name){ nameInput.focus(); return; }
+    if (!qty || qty <= 0){ qtyInput.focus(); return; }
+    if (isNaN(price) || price < 0){ priceInput.focus(); return; }
+    if (editIndex !== null){
+      items[editIndex] = { name: name, qty: qty, unit: unit, price: price };
+      exitEditMode();
+    } else {
+      items.push({ name: name, qty: qty, unit: unit, price: price });
+      nameInput.value = ''; qtyInput.value = ''; priceInput.value = '';
+      nameInput.focus();
+    }
+    render();
+  });
+
+  [nameInput, qtyInput, priceInput].forEach(function(el){
+    el.addEventListener('keydown', function(e){
+      if (e.key === 'Enter'){ e.preventDefault(); addBtn.click(); }
+    });
+  });
+
+  budgetInput.addEventListener('input', render);
+
+  downloadBtn.addEventListener('click', function(){
+    saveToHistory();
+    var originalLabel = downloadBtn.textContent;
+
+    if (typeof html2canvas === 'undefined' || (!window.jspdf && !window.jsPDF)){
+      // fallback: plain browser print if libraries failed to load
+      window.print();
+      return;
+    }
+
+    downloadBtn.disabled = true;
+    downloadBtn.textContent = 'तैयार हो रहा है...';
+
+    document.body.classList.add('measuring');
+    var target = document.getElementById('receiptShell');
+
+    html2canvas(target, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(function(canvas){
+      document.body.classList.remove('measuring');
+      var imgData = canvas.toDataURL('image/png');
+      var pxToMm = 25.4 / 96;
+      var wMm = (canvas.width / 2) * pxToMm;
+      var hMm = (canvas.height / 2) * pxToMm;
+      var jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+      var pdf = new jsPDFCtor({
+        orientation: wMm > hMm ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: [wMm, hMm]
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, wMm, hMm);
+      pdf.save('rasid-' + shortDate(new Date()) + '.pdf');
+      downloadBtn.disabled = false;
+      downloadBtn.textContent = originalLabel;
+    }).catch(function(err){
+      document.body.classList.remove('measuring');
+      downloadBtn.disabled = false;
+      downloadBtn.textContent = originalLabel;
+      alert('माफ़ करें, PDF बनाने में दिक्कत आई। कृपया दोबारा कोशिश करें।');
+    });
+  });
+
+  /* ---------- History (localStorage, private to this browser) ---------- */
+  var HKEY = 'kirana_receipt_history_v1';
+
+  function loadHistory(){
+    try {
+      var raw = localStorage.getItem(HKEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e){ return []; }
+  }
+  function saveHistory(list){
+    try { localStorage.setItem(HKEY, JSON.stringify(list)); } catch(e){}
+  }
+
+  function saveToHistory(){
+    if (items.length === 0) return;
+    var budget = parseFloat(budgetInput.value) || null;
+    var total = items.reduce(function(s,it){ return s + it.price; }, 0);
+    var list = loadHistory();
+    list.unshift({
+      id: Date.now(),
+      dateStr: todayStr,
+      items: items.slice(),
+      budget: budget,
+      total: total
+    });
+    if (list.length > 50) list = list.slice(0, 50);
+    saveHistory(list);
+    renderHistory();
+  }
+
+  function renderHistory(){
+    var list = loadHistory();
+    var panel = document.getElementById('historyPanel');
+    var listEl = document.getElementById('historyList');
+    if (list.length === 0){ panel.style.display = 'none'; return; }
+    panel.style.display = 'block';
+    listEl.innerHTML = '';
+    list.forEach(function(entry){
+      var div = document.createElement('div');
+      div.className = 'history-item';
+      div.innerHTML =
+        '<div class="history-main">' +
+          '<span class="history-date">' + escapeHtml(entry.dateStr) + '</span>' +
+          '<span class="history-meta">' + entry.items.length + ' वस्तुएं · कुल ₹' + fmt(entry.total) + '</span>' +
+        '</div>' +
+        '<div class="history-btns">' +
+          '<button class="open-btn" data-id="' + entry.id + '">खोलें</button>' +
+          '<button class="del-btn" data-id="' + entry.id + '">हटाएं</button>' +
+        '</div>';
+      listEl.appendChild(div);
+    });
+    Array.prototype.forEach.call(listEl.querySelectorAll('.open-btn'), function(btn){
+      btn.addEventListener('click', function(){ openHistoryEntry(parseInt(btn.getAttribute('data-id'),10)); });
+    });
+    Array.prototype.forEach.call(listEl.querySelectorAll('.del-btn'), function(btn){
+      btn.addEventListener('click', function(){
+        var list = loadHistory().filter(function(e){ return e.id !== parseInt(btn.getAttribute('data-id'),10); });
+        saveHistory(list);
+        renderHistory();
+      });
+    });
+  }
+
+  function openHistoryEntry(id){
+    var list = loadHistory();
+    var entry = list.filter(function(e){ return e.id === id; })[0];
+    if (!entry) return;
+    items = entry.items.slice();
+    budgetInput.value = entry.budget || '';
+    document.getElementById('receiptDate').textContent = "दिनांक: " + entry.dateStr;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  renderHistory();
+  render();
+})();
+</script>
+</body>
+</html>
